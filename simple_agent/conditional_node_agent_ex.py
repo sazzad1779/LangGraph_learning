@@ -41,9 +41,9 @@ def decide_next_node (state:AgentState)->AgentState:
         return "sub_condition"
 def decide_next_node1(state:AgentState)->AgentState:
     """this node is responsible for taking decision"""
-    if state["op"]=="+":
+    if state["op2"]=="+":
         return "add_condition"
-    elif state["op"]=="-":
+    elif state["op2"]=="-":
         return "sub_condition"
 
 graph = StateGraph(AgentState)
@@ -59,15 +59,33 @@ graph.add_conditional_edges(
     }
 )
 graph.add_edge(START, "route")
-graph.add_edge("add_node", END)
-graph.add_edge("sub_node", END)
+# graph.add_edge("add_node", END)
+# graph.add_edge("sub_node", END)
 
+graph.add_node("add_node2", add_node2)
+graph.add_node("sub_node2", sub_node2)
+graph.add_node("route2", lambda state:state)
+graph.add_conditional_edges(
+    "route2",
+    decide_next_node1,
+    {   # edge name: node name
+        "add_condition": "add_node2",
+        "sub_condition": "sub_node2"
+    }
+)
+graph.add_edge("add_node", "route2")
+graph.add_edge("sub_node", "route2")
+graph.add_edge("add_node2", END)
+graph.add_edge("sub_node2", END)
 app =graph.compile()
 
+print(app.get_graph().draw_mermaid())
 
 from IPython.display import Image, display
 display(Image(app.get_graph().draw_mermaid_png()))
 
+app.invoke({"n1":1,"n2":2,"op":"+","n12":1,"n22":2,"op2":"-"})
+app.invoke({"n1":1,"n2":2,"op":"+","n12":1,"n22":10,"op2":"-"})
 
 
 
